@@ -27,6 +27,7 @@ jobs:
         # informationally check the latest as well.  We should
         # regularly update the known good once we know that tests
         # pass on it
+        # This needs to stay in sync with comment.yml
         rust-toolchain: [ 1.66, stable, nightly ]
     steps:
     - uses: actions/checkout@v3
@@ -38,17 +39,18 @@ jobs:
       id: clippy
       run: .github/workflows/clippy.sh ${{ matrix.rust-toolchain }}
       continue-on-error: ${{ matrix.rust-toolchain != '1.66' }}
-    - name: Notify clippy failure
-      if: ${{ (steps.clippy.outcome != steps.clippy.conclusion) && (matrix.rust-toolchain != '1.66') }}
-      uses: actions/github-script@v6
+    - name: Store clippy flag
+      run: |
+        mkdir -p ./clippy-${{ matrix.rust-toolchain }}
+        if [[ ${{ steps.clippy.outcome }} == "success" ]] ; then \
+          echo 0 > ./clippy-${{ matrix.rust-toolchain }}/flag; \
+        else \
+          echo 1 > ./clippy-${{ matrix.rust-toolchain }}/flag; \
+        fi
+    - uses: actions/upload-artifact@v2
       with:
-        script: |
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: 'Stable clippy has failed for this run. A maintainer should check the logs. If known good clippy passed, this is non-fatal to the PR.'
-          })
+        name: clippy-${{ matrix.rust-toolchain }}
+        path: clippy-${{ matrix.rust-toolchain }}/
     - name: Check docs
       run: .github/workflows/doc.sh ${{ matrix.rust-toolchain }}
   test:
