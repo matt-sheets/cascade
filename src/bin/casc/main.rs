@@ -1,9 +1,14 @@
+#![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
+// TODO linking to files in the README is broken, maybe if they are generated in the pipeline?
+
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: MIT
 use selinux_cascade::error::{CascadeErrors, ErrorItem};
 use selinux_cascade::{compile_combined, compile_machine_policies, compile_machine_policies_all};
 
+#[doc(hidden)]
 mod args;
+#[doc(hidden)]
 mod package;
 use args::{Args, ColorArg};
 use package::build_package;
@@ -95,6 +100,8 @@ fn main() -> std::io::Result<()> {
     }
 }
 
+#[doc(hidden)]
+/// Prints a list of CascadeErrors
 fn print_error(error_list: CascadeErrors, color: ColorChoice) -> std::io::Result<()> {
     for e in error_list {
         if let ErrorItem::Parse(p) = e {
@@ -108,7 +115,13 @@ fn print_error(error_list: CascadeErrors, color: ColorChoice) -> std::io::Result
     Err(Error::new(ErrorKind::InvalidData, "Invalid policy"))
 }
 
-// Create a list of policy files
+/// Create a list of policy files
+/// 
+/// # Example
+/// ```rust
+/// let filelist = vec!["kernel.cas", "system.cas"];
+/// let policies = get_policy_files(filelist)?;
+/// ```
 fn get_policy_files(filenames: Vec<String>) -> Result<Vec<String>, Error> {
     let mut policy_files = Vec::new();
     for file in filenames {

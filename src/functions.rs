@@ -1826,7 +1826,18 @@ fn validate_cast(
     }
 }
 
-// Validate that the parent provided both exists and is actually a parent of the current resource.
+/// Validate that the parent provided both exists and is actually a parent of the current resource.
+/// # Arguments
+/// 
+/// - `call` - The call we are currently inspecting.  Used for error output.
+/// - `class_info` - The type we are checking the parent of.
+/// - `parent_name` - The name of the parent.
+/// - `file` - The file the call is present in.  Used for error output.
+/// 
+/// # Errors
+/// 
+/// Returns an ErrorItem if the resource provided does not exist, the parent does not exist
+/// or the parent is not an actual parent of the resource
 fn validate_inheritance(
     call: &FuncCall,
     class_info: Option<&TypeInfo>,
